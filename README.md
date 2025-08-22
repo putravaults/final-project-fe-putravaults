@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Concert Ticket Booking Frontend
 
 A modern, responsive web application for booking concert tickets built with Next.js 15, React 19, and TypeScript.
@@ -56,8 +55,6 @@ This frontend application provides a seamless ticket booking experience for conc
    ```env
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-secret-key
-   NEXTAUTH_GITHUB_ID=your-github-client-id
-   NEXTAUTH_GITHUB_SECRET=your-github-client-secret
    MIDTRANS_SERVER_KEY=your-midtrans-server-key
    MIDTRANS_CLIENT_KEY=your-midtrans-client-key
    API_BASE_URL=http://localhost:3001
@@ -113,7 +110,6 @@ The frontend connects to a NestJS backend API with endpoints for:
 ## 🔐 Authentication
 
 - **NextAuth.js** for session management
-- **GitHub OAuth** for social login
 - **JWT tokens** for stateless authentication
 - **Protected routes** for admin and user areas
 
@@ -194,6 +190,3 @@ For support and questions:
 ---
 
 **Built with ❤️ using Next.js, React, and TypeScript**
-=======
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/nHz2UZ-S)
->>>>>>> dba628bcb6783f3f125192db8e352f12dbe86a6e
