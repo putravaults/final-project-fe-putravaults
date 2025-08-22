@@ -47,6 +47,7 @@ export interface TicketClassesResponse {
 export interface TicketAvailabilityClass {
   ticketClassId: number;
   ticketClassName: string;
+  description: string | null;
   price: number;
   totalCount: number;
   soldCount: number;
@@ -59,4 +60,30 @@ export interface TicketAvailabilityResponse {
   eventName: string;
   ticketClasses: TicketAvailabilityClass[];
   totalAvailable: number;
+}
+
+export interface Ticket {
+  id: number;
+  eventId: number;
+  ticketClassId: number;
+  bookingId: number | null;
+  seatNumber: string | null;
+  status: string;
+  ticketClass: {
+    id: number;
+    name: string;
+    description: string | null;
+    price: number;
+  };
+  event: {
+    id: number;
+    name: string;
+    date: Date;
+    location: string;
+  };
+}
+
+export interface TicketsResponse {
+  tickets: Ticket[];
+  total: number;
 }

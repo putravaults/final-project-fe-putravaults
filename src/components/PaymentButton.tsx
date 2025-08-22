@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { paymentApi } from '@/lib/api';
-import { createPaymentToken, openMidtransSnap, PaymentData } from '@/lib/midtrans';
 
 interface PaymentButtonProps {
   eventId: number;
@@ -34,6 +33,10 @@ export default function PaymentButton({
     setLoading(true);
 
     try {
+      console.log('=== Starting Payment Process ===');
+      console.log('Session user:', session.user);
+      console.log('Event details:', { eventId, eventName, ticketClassId, ticketClassName, price, quantity });
+
       // Step 1: Create booking directly with ticket class ID and quantity
       const bookingData = {
         userId: parseInt(session.user.id.toString()),
@@ -45,15 +48,13 @@ export default function PaymentButton({
         ]
       };
 
-      console.log('Creating booking:', bookingData);
-      console.log('userId type:', typeof bookingData.userId);
-      console.log('Raw booking data being sent:', JSON.stringify(bookingData, null, 2));
+      console.log('Creating booking with data:', bookingData);
       
       const booking = await paymentApi.createBooking(bookingData, session.accessToken);
-      console.log('Booking created:', booking);
+      console.log('Booking created successfully:', booking);
 
-      // Step 2: Prepare payment data for Midtrans
-      const paymentData: PaymentData = {
+      // Step 2: Prepare payment data for backend
+      const paymentData = {
         orderId: `ORDER-${booking.id}`, // Use booking ID for order ID
         amount: price * quantity,
         customerName: session.user.name || 'Customer',
@@ -68,19 +69,54 @@ export default function PaymentButton({
         ],
       };
 
-      console.log('Payment data:', paymentData);
+      console.log('Prepared payment data for backend:', paymentData);
 
-      // Step 3: Create payment token from Midtrans
-      const paymentToken = await createPaymentToken(paymentData);
-      console.log('Payment token:', paymentToken);
+      // Step 3: Create payment through backend (avoids CORS issues)
+      console.log('Calling backend payment endpoint...');
+      const paymentResult = await paymentApi.createPayment(paymentData, session.accessToken);
+      console.log('Payment result from backend:', paymentResult);
 
-      // Step 4: Open Midtrans Snap popup
-      openMidtransSnap(paymentToken);
+      // Step 4: Handle payment result
+      if (paymentResult.success) {
+        if (paymentResult.redirect_url) {
+          // Open bank transfer page in new window
+          window.open(paymentResult.redirect_url, '_blank', 'width=600,height=600');
+          // Redirect to payment status page
+          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
+        } else if (paymentResult.va_numbers && paymentResult.va_numbers.length > 0) {
+          // Show virtual account numbers
+          const vaInfo = paymentResult.va_numbers.map((va: any) => 
+            `${va.bank.toUpperCase()}: ${va.va_number}`
+          ).join('\n');
+          alert(`Please transfer to:\n${vaInfo}\n\nOrder ID: ${paymentResult.order_id}\n\nYou will be redirected to your tickets page.`);
+          // Redirect to payment status page
+          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
+        } else {
+          alert('Payment created successfully. You will be redirected to your tickets page.');
+          // Redirect to payment status page
+          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
+        }
+      } else {
+        throw new Error('Payment creation failed');
+      }
 
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('=== Payment Error Details ===');
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : error);
+      console.error('Full error object:', error);
+      
       if (error instanceof Error) {
-        alert(`Payment failed: ${error.message}`);
+        // Check if it's a network error
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          alert('Network error: Unable to connect to payment service. Please check your internet connection and try again.');
+        } else if (error.message.includes('401') || error.message.includes('403')) {
+          alert('Authentication error: Please login again and try the payment.');
+        } else if (error.message.includes('500')) {
+          alert('Server error: Payment service is temporarily unavailable. Please try again later.');
+        } else {
+          alert(`Payment failed: ${error.message}`);
+        }
       } else {
         alert('Failed to process payment. Please try again.');
       }

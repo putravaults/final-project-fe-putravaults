@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
+const Backend_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
 // Verify Midtrans webhook signature
 const verifySignature = (requestBody: string, signature: string): boolean => {
   const expectedSignature = crypto
@@ -10,6 +12,38 @@ const verifySignature = (requestBody: string, signature: string): boolean => {
   
   return signature === expectedSignature;
 };
+
+// Helper function to update booking status via backend
+async function updateBookingStatus(orderId: string, status: string) {
+  try {
+    // Extract booking ID from order ID (ORDER-175 -> 175)
+    const bookingId = orderId.replace('ORDER-', '');
+    
+    console.log(`Updating booking ${bookingId} to status: ${status}`);
+    
+    // Call backend to update booking status
+    const response = await fetch(`${Backend_URL}/booking/${bookingId}/update-status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to update booking status: ${response.status} - ${errorText}`);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log(`Booking status updated successfully:`, result);
+    return true;
+  } catch (error) {
+    console.error('Error updating booking status:', error);
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,14 +74,13 @@ export async function POST(request: NextRequest) {
       case 'settlement':
         // Payment successful
         console.log(`Payment successful for order: ${order_id}`);
-        // TODO: Update booking status to CONFIRMED
-        // TODO: Send confirmation email to customer
+        await updateBookingStatus(order_id, 'CONFIRMED');
         break;
 
       case 'pending':
         // Payment pending
         console.log(`Payment pending for order: ${order_id}`);
-        // TODO: Update booking status to PENDING
+        await updateBookingStatus(order_id, 'PENDING');
         break;
 
       case 'deny':
@@ -55,8 +88,7 @@ export async function POST(request: NextRequest) {
       case 'cancel':
         // Payment failed
         console.log(`Payment failed for order: ${order_id}`);
-        // TODO: Update booking status to CANCELLED
-        // TODO: Release tickets back to available
+        await updateBookingStatus(order_id, 'CANCELLED');
         break;
 
       default:
@@ -66,10 +98,10 @@ export async function POST(request: NextRequest) {
     // Check fraud status
     if (fraud_status === 'challenge') {
       console.log(`Payment challenged for order: ${order_id}`);
-      // TODO: Handle fraud challenge
+      // Could update booking status to 'CHALLENGED' if needed
     } else if (fraud_status === 'deny') {
       console.log(`Payment denied due to fraud for order: ${order_id}`);
-      // TODO: Handle fraud denial
+      await updateBookingStatus(order_id, 'CANCELLED');
     }
 
     // Return success to Midtrans

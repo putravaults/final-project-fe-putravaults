@@ -4,8 +4,8 @@ export const MIDTRANS_CONFIG = {
   isProduction: false,
   
   // Your Midtrans credentials (get these from Midtrans dashboard)
-  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-61XuGAwQ8Bj8LzSS',
-  serverKey: process.env.MIDTRANS_SERVER_KEY || 'SB-Mid-server-GwIO_WGbJPXsDzsNEBRs8IYA',
+  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-_SdP2QL-1D4jfVxV',
+  serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EzmRo7KWjCxVsAy6W9RNaVBi',
   
   // Base URLs
   snapUrl: 'https://app.sandbox.midtrans.com/snap/v1/transactions',
@@ -29,6 +29,10 @@ export interface PaymentData {
 // Create payment token for Snap
 export const createPaymentToken = async (paymentData: PaymentData): Promise<string> => {
   try {
+    console.log('Creating payment token with data:', paymentData);
+    console.log('Using server key:', MIDTRANS_CONFIG.serverKey);
+    
+    // Use Core API for bank transfer
     const response = await fetch(`${MIDTRANS_CONFIG.apiUrl}/charge`, {
       method: 'POST',
       headers: {
@@ -39,7 +43,7 @@ export const createPaymentToken = async (paymentData: PaymentData): Promise<stri
       body: JSON.stringify({
         payment_type: 'bank_transfer',
         bank_transfer: {
-          bank: 'bca', // or 'mandiri', 'bni', 'bri'
+          bank: 'bca', // Default to BCA, can be changed to 'mandiri', 'bni', 'bri'
         },
         transaction_details: {
           order_id: paymentData.orderId,
@@ -53,52 +57,77 @@ export const createPaymentToken = async (paymentData: PaymentData): Promise<stri
       }),
     });
 
+    console.log('Midtrans API response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`Payment creation failed: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Midtrans API error response:', errorText);
+      throw new Error(`Payment creation failed: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    return result.redirect_url || result.token;
+    console.log('Midtrans API success response:', result);
+    
+    // For bank transfer, we get a redirect URL instead of a token
+    if (result.redirect_url) {
+      return result.redirect_url;
+    } else if (result.va_numbers && result.va_numbers.length > 0) {
+      // If we get VA numbers, we can show them directly
+      return `bank_transfer_${result.order_id}`;
+    } else {
+      throw new Error('No payment URL or VA numbers received from Midtrans');
+    }
   } catch (error) {
     console.error('Error creating payment:', error);
-    throw new Error('Failed to create payment');
+    if (error instanceof Error) {
+      throw new Error(`Failed to create payment: ${error.message}`);
+    } else {
+      throw new Error('Failed to create payment');
+    }
   }
 };
 
-// Open Midtrans Snap popup
-export const openMidtransSnap = (token: string) => {
-  // Load Midtrans Snap script
-  const script = document.createElement('script');
-  script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-  script.setAttribute('data-client-key', MIDTRANS_CONFIG.clientKey);
-  
-  script.onload = () => {
-    // @ts-ignore - Midtrans Snap is loaded globally
-    window.snap.pay(token, {
-      onSuccess: (result: any) => {
-        console.log('Payment success:', result);
-        // Handle success - update booking status
-        window.location.href = `/payment/success?order_id=${result.order_id}`;
-      },
-      onPending: (result: any) => {
-        console.log('Payment pending:', result);
-        // Handle pending - show instructions
-        window.location.href = `/payment/pending?order_id=${result.order_id}`;
-      },
-      onError: (result: any) => {
-        console.log('Payment error:', result);
-        // Handle error
-        window.location.href = `/payment/error?order_id=${result.order_id}`;
-      },
-      onClose: () => {
-        console.log('Payment popup closed');
-        // Handle popup closed
-        alert('Payment was cancelled');
-      },
-    });
-  };
-  
-  document.head.appendChild(script);
+// Open Midtrans payment (modified for bank transfer)
+export const openMidtransSnap = (paymentUrl: string) => {
+  if (paymentUrl.startsWith('http')) {
+    // If it's a redirect URL, open it in a new window
+    window.open(paymentUrl, '_blank', 'width=600,height=600');
+  } else if (paymentUrl.startsWith('bank_transfer_')) {
+    // If it's a bank transfer order ID, show instructions
+    const orderId = paymentUrl.replace('bank_transfer_', '');
+    alert(`Bank transfer instructions will be shown for order: ${orderId}`);
+    // You can redirect to a payment instructions page here
+    window.location.href = `/payment/pending?order_id=${orderId}`;
+  } else {
+    // Fallback to Snap popup if we have a token
+    const script = document.createElement('script');
+    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    script.setAttribute('data-client-key', MIDTRANS_CONFIG.clientKey);
+    
+    script.onload = () => {
+      // @ts-ignore - Midtrans Snap is loaded globally
+      window.snap.pay(paymentUrl, {
+        onSuccess: (result: any) => {
+          console.log('Payment success:', result);
+          window.location.href = `/payment/success?order_id=${result.order_id}`;
+        },
+        onPending: (result: any) => {
+          console.log('Payment pending:', result);
+          window.location.href = `/payment/pending?order_id=${result.order_id}`;
+        },
+        onError: (result: any) => {
+          console.log('Payment error:', result);
+          window.location.href = `/payment/error?order_id=${result.order_id}`;
+        },
+        onClose: () => {
+          console.log('Payment popup closed');
+          alert('Payment was cancelled');
+        },
+      });
+    };
+    
+    document.head.appendChild(script);
+  }
 };
 
 // Verify payment status

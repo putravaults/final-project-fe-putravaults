@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Event } from '@/lib/types';
+import { Event, Ticket } from '@/lib/types';
 import { eventApi } from '@/lib/api';
 import { IoCloseOutline, IoAddOutline, IoTrashOutline } from 'react-icons/io5';
 
@@ -63,14 +63,27 @@ export default function GenerateTicketsModal({ event, onClose, onTicketsGenerate
     setLoading(true);
 
     try {
-      // First, create ticket classes
+      // First, get existing ticket classes for this event
+      const existingTicketClasses = await eventApi.getEventTicketClasses(event.id);
+      
+      // Create ticket classes (only if they don't already exist)
       const ticketClassPromises = validTicketClasses.map(async (tc) => {
-        return await eventApi.createTicketClass({
-          eventId: event.id,
-          name: tc.name.trim(),
-          description: tc.description.trim(),
-          price: tc.price,
-        }, session.accessToken);
+        const existingClass = existingTicketClasses.ticketClasses.find(
+          existing => existing.name.toLowerCase() === tc.name.trim().toLowerCase()
+        );
+        
+        if (existingClass) {
+          // Use existing ticket class
+          return existingClass;
+        } else {
+          // Create new ticket class
+          return await eventApi.createTicketClass({
+            eventId: event.id,
+            name: tc.name.trim(),
+            description: tc.description.trim(),
+            price: tc.price,
+          }, session.accessToken);
+        }
       });
 
       const createdTicketClasses = await Promise.all(ticketClassPromises);
@@ -80,7 +93,16 @@ export default function GenerateTicketsModal({ event, onClose, onTicketsGenerate
         const quantity = validTicketClasses[index].quantity;
         const tickets = [];
 
-        for (let i = 1; i <= quantity; i++) {
+        // Check if this ticket class already has tickets
+        const existingTickets = await eventApi.getTicketsByEvent(event.id);
+        const ticketsForThisClass = existingTickets.tickets.filter(
+          (ticket: Ticket) => ticket.ticketClassId === ticketClass.id
+        );
+
+        // Only create new tickets if we need more than what already exists
+        const ticketsToCreate = Math.max(0, quantity - ticketsForThisClass.length);
+
+        for (let i = 1; i <= ticketsToCreate; i++) {
           const seatNumber = `${String.fromCharCode(65 + Math.floor((i - 1) / 10))}${i % 10 || 10}`;
           
           const ticket = await eventApi.createTicket({
@@ -96,9 +118,10 @@ export default function GenerateTicketsModal({ event, onClose, onTicketsGenerate
         return tickets;
       });
 
-      await Promise.all(ticketPromises);
+      const allTickets = await Promise.all(ticketPromises);
+      const totalTicketsCreated = allTickets.flat().length;
 
-      alert(`Successfully generated ${validTicketClasses.reduce((sum, tc) => sum + tc.quantity, 0)} tickets for ${event.name}!`);
+      alert(`Successfully generated ${totalTicketsCreated} tickets for ${event.name}!`);
       onTicketsGenerated();
       onClose();
 

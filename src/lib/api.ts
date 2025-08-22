@@ -1,5 +1,5 @@
 import { Backend_URL } from './constant';
-import { UpcomingEventsResponse, Event, TicketClassesResponse, TicketAvailabilityResponse } from './types';
+import { UpcomingEventsResponse, Event, TicketClassesResponse, TicketAvailabilityResponse, TicketsResponse } from './types';
 
 // Helper function for consistent error handling
 const handleApiError = async (response: Response) => {
@@ -57,7 +57,7 @@ export const eventApi = {
   },
 
   // Get all tickets by event
-  getTicketsByEvent: async (eventId: number): Promise<any> => {
+  getTicketsByEvent: async (eventId: number): Promise<TicketsResponse> => {
     const response = await fetch(`${Backend_URL}/ticket/event/${eventId}`);
     await handleApiError(response);
     return await response.json();
@@ -113,7 +113,7 @@ export const eventApi = {
     description: string;
     price: number;
   }, token: string) => {
-    const response = await fetch(`${Backend_URL}/ticket-class/create`, {
+    const response = await fetch(`${Backend_URL}/event/ticket-class/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -204,6 +204,49 @@ export const paymentApi = {
     return await response.json();
   },
 
+  // Create payment through backend (to avoid CORS issues)
+  createPayment: async (paymentData: {
+    orderId: string;
+    amount: number;
+    customerName: string;
+    customerEmail: string;
+    itemDetails: Array<{
+      id: string;
+      price: number;
+      quantity: number;
+      name: string;
+    }>;
+  }, token: string) => {
+    console.log('API createPayment - sending data:', JSON.stringify(paymentData, null, 2));
+    
+    const response = await fetch(`${Backend_URL}/payment/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(paymentData),
+    });
+    
+    await handleApiError(response);
+    return await response.json();
+  },
+
+  // Check payment status
+  checkPaymentStatus: async (orderId: string, token: string) => {
+    console.log('API checkPaymentStatus - orderId:', orderId);
+    
+    const response = await fetch(`${Backend_URL}/payment/status/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    await handleApiError(response);
+    return await response.json();
+  },
+
   // Get booking details
   getBooking: async (bookingId: number, token: string) => {
     const response = await fetch(`${Backend_URL}/booking/${bookingId}`, {
@@ -219,6 +262,19 @@ export const paymentApi = {
   // Get user bookings
   getUserBookings: async (userId: number, token: string) => {
     const response = await fetch(`${Backend_URL}/booking/user/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    await handleApiError(response);
+    return await response.json();
+  },
+
+  // Cancel booking
+  cancelBooking: async (bookingId: number, token: string) => {
+    const response = await fetch(`${Backend_URL}/booking/${bookingId}/cancel`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },

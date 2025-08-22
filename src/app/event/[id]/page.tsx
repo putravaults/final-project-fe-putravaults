@@ -44,13 +44,25 @@ export default function EventPage() {
         const eventData = await eventApi.getEventById(eventId);
         setEvent(eventData);
         
-        // Fetch ticket classes
+        // Fetch ticket availability
         setTicketClassesLoading(true);
         try {
-          const ticketData = await eventApi.getEventTicketClasses(eventId);
-          setTicketClasses(ticketData.ticketClasses);
+          const ticketData = await eventApi.getEventTicketAvailability(eventId);
+          // Convert TicketAvailabilityClass to TicketClass format for compatibility
+          const convertedTicketClasses = ticketData.ticketClasses.map(tc => ({
+            id: tc.ticketClassId,
+            eventId: eventId,
+            name: tc.ticketClassName,
+            description: tc.description || '',
+            price: tc.price,
+            totalCount: tc.totalCount,
+            soldCount: tc.soldCount,
+            availableCount: tc.availableCount,
+            createdAt: new Date().toISOString(), // Not available in availability response
+          }));
+          setTicketClasses(convertedTicketClasses);
         } catch (ticketError) {
-          console.warn('Could not fetch ticket classes:', ticketError);
+          console.warn('Could not fetch ticket availability:', ticketError);
           // Don't set error state for ticket classes, just show without pricing
         } finally {
           setTicketClassesLoading(false);
@@ -258,8 +270,8 @@ export default function EventPage() {
               ) : (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
                   <IoTicketOutline className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 mb-2">Tickets information</p>
-                  <p className="text-sm text-gray-500">Contact event organizer for ticket details</p>
+                  <p className="text-gray-600 mb-2">No tickets available</p>
+                  <p className="text-sm text-gray-500">All tickets for this event have been sold out.</p>
                 </div>
               )}
             </div>

@@ -34,11 +34,11 @@ export default function Navlink () {
               </li>
             )}
             
-            {/* My Tickets - Only visible to regular users */}
-            {session && session.user && session.user.role === 'USER' && (
+            {/* My Tickets - Visible to all authenticated users */}
+            {session && session.user && (
               <li>
                   <Link 
-                      href="/mytickets" 
+                      href="/my-tickets" 
                       className="block py-2 px-3 text-gray-800 hover:bg-gray-100 rounded-sm">
                       My Tickets
                   </Link>

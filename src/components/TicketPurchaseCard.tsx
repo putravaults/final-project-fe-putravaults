@@ -45,32 +45,41 @@ export default function TicketPurchaseCard({
       
       {/* Ticket Class Selection */}
       <div className="space-y-3 mb-6">
-        {ticketClasses.map((ticketClass) => (
-          <div
-            key={ticketClass.id}
-            className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-              selectedTicketClass?.id === ticketClass.id
-                ? 'border-green-500 bg-green-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => setSelectedTicketClass(ticketClass)}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-semibold text-gray-900">{ticketClass.name}</h4>
-                <p className="text-sm text-gray-600 mt-1">{ticketClass.description}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Available: {ticketClass.availableCount} tickets
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold text-green-600">
-                  Rp.{ticketClass.price.toLocaleString()}
-                </p>
+        {ticketClasses.filter(ticketClass => ticketClass.availableCount > 0).length > 0 ? (
+          ticketClasses
+            .filter(ticketClass => ticketClass.availableCount > 0)
+            .map((ticketClass) => (
+            <div
+              key={ticketClass.id}
+              className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                selectedTicketClass?.id === ticketClass.id
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onClick={() => setSelectedTicketClass(ticketClass)}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-semibold text-gray-900">{ticketClass.name}</h4>
+                  <p className="text-sm text-gray-600 mt-1">{ticketClass.description}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Available: {ticketClass.availableCount} tickets
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-green-600">
+                    Rp.{ticketClass.price.toLocaleString()}
+                  </p>
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="border border-gray-200 rounded-lg p-6 text-center">
+            <p className="text-gray-600 mb-2">No tickets available</p>
+            <p className="text-sm text-gray-500">All tickets for this event have been sold out.</p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Quantity Selection */}
