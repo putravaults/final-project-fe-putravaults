@@ -4,8 +4,8 @@ export const MIDTRANS_CONFIG = {
   isProduction: false,
   
   // Your Midtrans credentials (get these from Midtrans dashboard)
-  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'Mid-client-_SdP2QL-1D4jfVxV',
-  serverKey: process.env.MIDTRANS_SERVER_KEY || 'Mid-server-EzmRo7KWjCxVsAy6W9RNaVBi',
+  clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY,
+  serverKey: process.env.MIDTRANS_SERVER_KEY ,
   
   // Base URLs
   snapUrl: 'https://app.sandbox.midtrans.com/snap/v1/transactions',
