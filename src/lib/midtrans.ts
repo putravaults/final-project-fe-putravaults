@@ -32,6 +32,10 @@ export const createPaymentToken = async (paymentData: PaymentData): Promise<stri
     console.log('Creating payment token with data:', paymentData);
     console.log('Using server key:', MIDTRANS_CONFIG.serverKey);
     
+    if (!MIDTRANS_CONFIG.serverKey) {
+      throw new Error('Midtrans server key is not configured');
+    }
+    
     // Use Core API for bank transfer
     const response = await fetch(`${MIDTRANS_CONFIG.apiUrl}/charge`, {
       method: 'POST',
@@ -100,22 +104,26 @@ export const openMidtransSnap = (paymentUrl: string) => {
     window.location.href = `/payment/pending?order_id=${orderId}`;
   } else {
     // Fallback to Snap popup if we have a token
+    if (!MIDTRANS_CONFIG.clientKey) {
+      throw new Error('Midtrans client key is not configured');
+    }
+    
     const script = document.createElement('script');
     script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
     script.setAttribute('data-client-key', MIDTRANS_CONFIG.clientKey);
     
     script.onload = () => {
-      // @ts-ignore - Midtrans Snap is loaded globally
+      // @ts-expect-error - Midtrans Snap is loaded globally
       window.snap.pay(paymentUrl, {
-        onSuccess: (result: any) => {
+        onSuccess: (result: { order_id: string }) => {
           console.log('Payment success:', result);
           window.location.href = `/payment/success?order_id=${result.order_id}`;
         },
-        onPending: (result: any) => {
+        onPending: (result: { order_id: string }) => {
           console.log('Payment pending:', result);
           window.location.href = `/payment/pending?order_id=${result.order_id}`;
         },
-        onError: (result: any) => {
+        onError: (result: { order_id: string }) => {
           console.log('Payment error:', result);
           window.location.href = `/payment/error?order_id=${result.order_id}`;
         },
@@ -131,8 +139,12 @@ export const openMidtransSnap = (paymentUrl: string) => {
 };
 
 // Verify payment status
-export const checkPaymentStatus = async (orderId: string): Promise<any> => {
+export const checkPaymentStatus = async (orderId: string): Promise<{ transaction_status: string; order_id: string; gross_amount: string }> => {
   try {
+    if (!MIDTRANS_CONFIG.serverKey) {
+      throw new Error('Midtrans server key is not configured');
+    }
+    
     const response = await fetch(`${MIDTRANS_CONFIG.apiUrl}/${orderId}/status`, {
       headers: {
         'Accept': 'application/json',

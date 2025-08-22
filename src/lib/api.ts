@@ -50,7 +50,7 @@ export const eventApi = {
   },
 
   // Get available tickets by ticket class
-  getAvailableTicketsByClass: async (ticketClassId: number): Promise<any> => {
+  getAvailableTicketsByClass: async (ticketClassId: number): Promise<{ tickets: Array<{ id: number; seatNumber: string; status: string }> }> => {
     const response = await fetch(`${Backend_URL}/ticket/ticket-class/${ticketClassId}`);
     await handleApiError(response);
     return await response.json();
@@ -162,7 +162,7 @@ export const userApi = {
   },
 
   // Create user (admin only)
-  createUser: async (userData: any, token: string) => {
+  createUser: async (userData: { name: string; email: string; password: string; role?: string }, token: string) => {
     const response = await fetch(`${Backend_URL}/user/create`, {
       method: 'POST',
       headers: {

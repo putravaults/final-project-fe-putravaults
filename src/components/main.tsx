@@ -42,7 +42,7 @@ export default function Main() {
                             
                             
                             return { ...event, minPrice };
-                        } catch (priceError) {
+                        } catch (_priceError) {
                             // If price fetching fails, still return the event without price
                             return { ...event, minPrice: undefined };
                         }

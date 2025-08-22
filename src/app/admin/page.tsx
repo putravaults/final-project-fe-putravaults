@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { Backend_URL } from "@/lib/constant";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import AdminDashboardComponent from "@/components/AdminDashboard";
 

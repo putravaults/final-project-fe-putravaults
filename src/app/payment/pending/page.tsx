@@ -1,24 +1,20 @@
 'use client'
 
-import { useEffect } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { IoTime, IoHome, IoReceipt } from 'react-icons/io5';
+import { IoTimeOutline, IoHome, IoReceipt } from 'react-icons/io5';
 
-export default function PaymentPendingPage() {
+function PaymentPendingContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
-
-  useEffect(() => {
-    console.log('Payment pending for order:', orderId);
-  }, [orderId]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
         {/* Pending Icon */}
         <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
-          <IoTime className="w-8 h-8 text-yellow-600" />
+          <IoTimeOutline className="w-8 h-8 text-yellow-600" />
         </div>
 
         {/* Pending Message */}
@@ -76,5 +72,13 @@ export default function PaymentPendingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPendingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentPendingContent />
+    </Suspense>
   );
 }
