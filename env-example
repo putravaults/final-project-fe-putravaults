@@ -1,0 +1,10 @@
+# NextAuth.js Configuration
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+
+# Backend API URL
+NEXT_PUBLIC_BACKEND_URL="https://final-project-be-putravaults-production.up.railway.app"
+
+# Midtrans Configuration
+NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=
+MIDTRANS_SERVER_KEY=
