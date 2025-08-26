@@ -57,5 +57,5 @@ export async function middleware(request: NextRequest) {
 
 // Configure which routes the middleware should run on
 export const config = {
-  matcher: ['/admin', '/my-tickets', '/checkout', '/signin', '/signup']
+  matcher: ['/admin', '/my-tickets', '/checkout/:path*', '/signin', '/signup']
 }

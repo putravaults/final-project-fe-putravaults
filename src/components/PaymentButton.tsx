@@ -8,7 +8,6 @@ declare global {
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import Script from 'next/script';
 import { paymentApi } from '@/lib/api';
 
 interface PaymentButtonProps {
@@ -30,7 +29,6 @@ export default function PaymentButton({
 }: PaymentButtonProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [snapLoaded, setSnapLoaded] = useState(false);
 
   const handlePayment = async () => {
     if (!session?.accessToken || !session?.user?.email || !session?.user?.id) {
@@ -38,18 +36,16 @@ export default function PaymentButton({
       return;
     }
 
-    if (!snapLoaded) {
-      alert('Payment system is still loading. Please wait a moment and try again.');
+    // Check if Midtrans client key is configured
+    if (!process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY) {
+      console.error('Midtrans client key not configured');
+      alert('Payment service is not properly configured. Please contact support.');
       return;
     }
 
     setLoading(true);
 
     try {
-      console.log('=== Starting Payment Process ===');
-      console.log('Session user:', session.user);
-      console.log('Event details:', { eventId, eventName, ticketClassId, ticketClassName, price, quantity });
-
       // Step 1: Create booking directly with ticket class ID and quantity
       const bookingData = {
         userId: parseInt(session.user.id.toString()),
@@ -60,16 +56,19 @@ export default function PaymentButton({
           }
         ]
       };
-
-      console.log('Creating booking with data:', bookingData);
       
       const booking = await paymentApi.createBooking(bookingData, session.accessToken);
-      console.log('Booking created successfully:', booking);
 
       // Step 2: Prepare payment data for backend
+      const totalAmount = price * quantity;
+      const itemName = `${eventName} - ${ticketClassName}`;
+      
+      // Truncate item name to fit Midtrans requirements (max 50 characters)
+      const truncatedItemName = itemName.length > 50 ? itemName.substring(0, 47) + '...' : itemName;
+      
       const paymentData = {
         orderId: `ORDER-${booking.id}`, // Use booking ID for order ID
-        amount: price * quantity,
+        amount: totalAmount,
         customerName: session.user.name || 'Customer',
         customerEmail: session.user.email,
         itemDetails: [
@@ -77,49 +76,42 @@ export default function PaymentButton({
             id: ticketClassId.toString(),
             price: price,
             quantity: quantity,
-            name: `${eventName} - ${ticketClassName}`,
+            name: truncatedItemName,
           },
         ],
       };
 
-      console.log('Prepared payment data for backend:', paymentData);
-
       // Step 3: Create payment through backend (avoids CORS issues)
-      console.log('Calling backend payment endpoint...');
-      const {token} = await paymentApi.createPayment(paymentData, session.accessToken)
+      const paymentResponse = await paymentApi.createPayment(paymentData, session.accessToken)
 
-      if(token){
-        // Step 4: Open Midtrans Snap popup
-        console.log('Opening Midtrans Snap popup with token:', token);
-        window.snap.pay(token) 
-        //we dont need these yet
-        // {
-        //   onSuccess: (result: { order_id: string }) => {
-        //     console.log('Payment success:', result);
-        //     window.location.href = `/payment/success?order_id=${result.order_id}`;
-        //   },
-        //   onPending: (result: { order_id: string }) => {
-        //     console.log('Payment pending:', result);
-        //     window.location.href = `/payment/pending?order_id=${result.order_id}`;
-        //   },
-        //   onError: (result: { order_id: string }) => {
-        //     console.log('Payment error:', result);
-        //     window.location.href = `/payment/error?order_id=${result.order_id}`;
-        //   },
-        //   onClose: () => {
-        //     console.log('Payment popup closed');
-        //     alert('Payment was cancelled');
-        //   },
-        // });
-      }
-      console.log('Payment result from backend:', token);
+      if (paymentResponse && paymentResponse.token) {
+        // Step 4: Check if Midtrans script is loaded
+        if (typeof window.snap === 'undefined') {
+          console.error('Midtrans Snap script not loaded');
+          alert('Payment service is not ready. Please refresh the page and try again.');
+          return;
+        }
+
+        // Step 5: Open Midtrans Snap popup
+        window.snap.pay(paymentResponse.token, {
+                      onSuccess: (result: { order_id: string }) => {
+              window.location.href = `/payment/success?order_id=${result.order_id}`;
+            },
+            onPending: (result: { order_id: string }) => {
+              window.location.href = `/payment/pending?order_id=${result.order_id}`;
+            },
+            onError: (result: { order_id: string }) => {
+              window.location.href = `/payment/error?order_id=${result.order_id}`;
+            },
+            onClose: () => {
+              alert('Payment was cancelled');
+            },
+        });
+              } else {
+          alert('Failed to initialize payment. Please try again.');
+        }
 
     } catch (error) {
-      console.error('=== Payment Error Details ===');
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : error);
-      console.error('Full error object:', error);
-      
       if (error instanceof Error) {
         // Check if it's a network error
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -140,21 +132,12 @@ export default function PaymentButton({
   };
 
   return (
-    <>
-      {/* Load Midtrans Snap Script */}
-      <Script
-        src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-        strategy="lazyOnload"
-      />
-      
-      <button
-        onClick={handlePayment}
-        disabled={loading || !snapLoaded}
-        className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {loading ? 'Processing...' : !snapLoaded ? 'Loading...' : `Pay Rp ${(price * quantity).toLocaleString()}`}
-      </button>
-    </>
+    <button
+      onClick={handlePayment}
+      disabled={loading}
+      className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {loading ? 'Processing...' : `Pay Rp ${(price * quantity).toLocaleString()}`}
+    </button>
   );
 }

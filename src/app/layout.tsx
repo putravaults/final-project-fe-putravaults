@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 import Footer from "@/components/footer";
 import AuthProvider from "@/components/AuthProvider";
+import MidtransScriptLoader from "@/components/MidtransScriptLoader";
 
 const lexendDeca = Lexend_Deca({
   variable: "--font-lexend-deca",
@@ -27,6 +28,7 @@ export default function RootLayout({
         className={`${lexendDeca.variable} antialiased`}
       >
         <AuthProvider>
+          <MidtransScriptLoader />
           <Navbar />
           <main className="min-h-screen">
             {children}

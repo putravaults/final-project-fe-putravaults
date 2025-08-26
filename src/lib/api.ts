@@ -187,10 +187,6 @@ export const paymentApi = {
       quantity: number;
     }>;
   }, token: string) => {
-    console.log('API createBooking - sending data:', JSON.stringify(bookingData, null, 2));
-    console.log('API createBooking - userId:', bookingData.userId, 'type:', typeof bookingData.userId);
-    console.log('API createBooking - tickets:', bookingData.tickets);
-    
     const response = await fetch(`${Backend_URL}/booking`, {
       method: 'POST',
       headers: {
@@ -217,8 +213,6 @@ export const paymentApi = {
       name: string;
     }>;
   }, token: string) => {
-    console.log('API createPayment - sending data:', JSON.stringify(paymentData, null, 2));
-    
     const response = await fetch(`${Backend_URL}/payment/create`, {
       method: 'POST',
       headers: {
@@ -234,8 +228,6 @@ export const paymentApi = {
 
   // Check payment status
   checkPaymentStatus: async (orderId: string, token: string) => {
-    console.log('API checkPaymentStatus - orderId:', orderId);
-    
     const response = await fetch(`${Backend_URL}/payment/status/${orderId}`, {
       method: 'GET',
       headers: {

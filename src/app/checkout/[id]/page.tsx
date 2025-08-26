@@ -6,6 +6,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { eventApi } from '@/lib/api';
 import PaymentButton from '@/components/PaymentButton';
 import BackButton from '@/components/BackButton';
+import MidtransDebug from '@/components/MidtransDebug';
+import PaymentTest from '@/components/PaymentTest';
 
 interface TicketClass {
   id: number;
@@ -263,6 +265,14 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      
+      {/* Debug components for development only */}
+      {/* {process.env.NODE_ENV === 'development' && (
+        <>
+          <MidtransDebug />
+          <PaymentTest />
+        </>
+      )} */}
     </div>
   );
 }
