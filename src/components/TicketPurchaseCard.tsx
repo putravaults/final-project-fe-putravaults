@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import PaymentButton from './PaymentButton';
+import { useRouter } from 'next/navigation';
 
 interface TicketClass {
   id: number;
@@ -23,21 +22,18 @@ export default function TicketPurchaseCard({
   eventName,
   ticketClasses,
 }: TicketPurchaseCardProps) {
-  const { data: session } = useSession();
+  const router = useRouter();
   const [selectedTicketClass, setSelectedTicketClass] = useState<TicketClass | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  if (!session) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Purchase Tickets</h3>
-        <p className="text-gray-600 mb-4">Please login to purchase tickets.</p>
-        <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-          Login to Purchase
-        </button>
-      </div>
-    );
-  }
+  const handleProceedToCheckout = () => {
+    if (selectedTicketClass) {
+      // Redirect to checkout page with event ID
+      router.push(`/checkout/${eventId}`);
+    }
+  };
+
+
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -121,16 +117,14 @@ export default function TicketPurchaseCard({
         </div>
       )}
 
-      {/* Payment Button */}
+      {/* Proceed to Checkout Button */}
       {selectedTicketClass && (
-        <PaymentButton
-          eventId={eventId}
-          ticketClassId={selectedTicketClass.id}
-          ticketClassName={selectedTicketClass.name}
-          price={selectedTicketClass.price}
-          quantity={quantity}
-          eventName={eventName}
-        />
+        <button
+          onClick={handleProceedToCheckout}
+          className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Proceed to Checkout
+        </button>
       )}
 
       {/* Instructions */}

@@ -10,7 +10,7 @@ export default async function AdminDashboardPage() {
 
     try {
         // Fetch user data for display purposes
-        // Note: Authentication and role checks are handled by middleware
+        // Authentication and role checks are handled by middleware
         const userResponse = await fetch(Backend_URL + `/user/${session?.user.id}`, {
             method: "GET",
             headers: {

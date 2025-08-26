@@ -1,8 +1,14 @@
-// @ts-nocheck
 'use client'
+
+declare global {
+  interface Window {
+    snap: any;
+  }
+}
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import Script from 'next/script';
 import { paymentApi } from '@/lib/api';
 
 interface PaymentButtonProps {
@@ -24,10 +30,16 @@ export default function PaymentButton({
 }: PaymentButtonProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [snapLoaded, setSnapLoaded] = useState(false);
 
   const handlePayment = async () => {
-    if (!session?.accessToken || !session?.user) {
+    if (!session?.accessToken || !session?.user?.email || !session?.user?.id) {
       alert('Please login to purchase tickets');
+      return;
+    }
+
+    if (!snapLoaded) {
+      alert('Payment system is still loading. Please wait a moment and try again.');
       return;
     }
 
@@ -74,32 +86,33 @@ export default function PaymentButton({
 
       // Step 3: Create payment through backend (avoids CORS issues)
       console.log('Calling backend payment endpoint...');
-      const paymentResult = await paymentApi.createPayment(paymentData, session.accessToken);
-      console.log('Payment result from backend:', paymentResult);
+      const {token} = await paymentApi.createPayment(paymentData, session.accessToken)
 
-      // Step 4: Handle payment result
-      if (paymentResult.success) {
-        if (paymentResult.redirect_url) {
-          // Open bank transfer page in new window
-          window.open(paymentResult.redirect_url, '_blank', 'width=600,height=600');
-          // Redirect to payment status page
-          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
-        } else if (paymentResult.va_numbers && paymentResult.va_numbers.length > 0) {
-          // Show virtual account numbers
-          const vaInfo = paymentResult.va_numbers.map((va: { bank: string; va_number: string }) => 
-            `${va.bank.toUpperCase()}: ${va.va_number}`
-          ).join('\n');
-          alert(`Please transfer to:\n${vaInfo}\n\nOrder ID: ${paymentResult.order_id}\n\nYou will be redirected to your tickets page.`);
-          // Redirect to payment status page
-          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
-        } else {
-          alert('Payment created successfully. You will be redirected to your tickets page.');
-          // Redirect to payment status page
-          window.location.href = `/payment/status?order_id=${paymentResult.order_id}`;
-        }
-      } else {
-        throw new Error('Payment creation failed');
+      if(token){
+        // Step 4: Open Midtrans Snap popup
+        console.log('Opening Midtrans Snap popup with token:', token);
+        window.snap.pay(token) 
+        //we dont need these yet
+        // {
+        //   onSuccess: (result: { order_id: string }) => {
+        //     console.log('Payment success:', result);
+        //     window.location.href = `/payment/success?order_id=${result.order_id}`;
+        //   },
+        //   onPending: (result: { order_id: string }) => {
+        //     console.log('Payment pending:', result);
+        //     window.location.href = `/payment/pending?order_id=${result.order_id}`;
+        //   },
+        //   onError: (result: { order_id: string }) => {
+        //     console.log('Payment error:', result);
+        //     window.location.href = `/payment/error?order_id=${result.order_id}`;
+        //   },
+        //   onClose: () => {
+        //     console.log('Payment popup closed');
+        //     alert('Payment was cancelled');
+        //   },
+        // });
       }
+      console.log('Payment result from backend:', token);
 
     } catch (error) {
       console.error('=== Payment Error Details ===');
@@ -127,12 +140,21 @@ export default function PaymentButton({
   };
 
   return (
-    <button
-      onClick={handlePayment}
-      disabled={loading}
-      className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-    >
-      {loading ? 'Processing...' : `Pay Rp ${(price * quantity).toLocaleString()}`}
-    </button>
+    <>
+      {/* Load Midtrans Snap Script */}
+      <Script
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        strategy="lazyOnload"
+      />
+      
+      <button
+        onClick={handlePayment}
+        disabled={loading || !snapLoaded}
+        className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading ? 'Processing...' : !snapLoaded ? 'Loading...' : `Pay Rp ${(price * quantity).toLocaleString()}`}
+      </button>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 // Define protected routes that require authentication
-const protectedRoutes = ['/admin', '/myreservation', '/checkout']
+const protectedRoutes = ['/admin', '/my-tickets', '/checkout']
 
 // Define admin-only routes that require admin role
 const adminRoutes = ['/admin']
@@ -57,15 +57,5 @@ export async function middleware(request: NextRequest) {
 
 // Configure which routes the middleware should run on
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/admin', '/my-tickets', '/checkout', '/signin', '/signup']
 }

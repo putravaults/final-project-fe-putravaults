@@ -17,6 +17,7 @@ import { eventApi } from '@/lib/api';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import BackButton from '@/components/BackButton';
 import TicketPurchaseCard from '@/components/TicketPurchaseCard';
+import { useSession } from 'next-auth/react';
 
 interface EventPageProps {
   params: {
