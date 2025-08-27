@@ -6,7 +6,7 @@ const Backend_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:800
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const bookingId = params.id;
+    const bookingId = (await params).id;
     
     // Fetch booking details from backend
     const response = await fetch(`${Backend_URL}/booking/${bookingId}`, {

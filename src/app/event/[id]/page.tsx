@@ -192,7 +192,7 @@ export default function EventPage() {
                 </span>
                 {minPrice && (
                   <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-md">
-                    From ${minPrice}
+                    From Rp. {minPrice.toLocaleString('id-ID')}
                   </span>
                 )}
               </div>
