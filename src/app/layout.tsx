@@ -11,10 +11,49 @@ const lexendDeca = Lexend_Deca({
   subsets: ["latin"],
 });
 
-
 export const metadata: Metadata = {
-  title: "Home",
-  description: "Concert Booking App",
+  title: {
+    default: "Concerto - Premium Concert Booking Platform",
+    template: "%s | Concerto"
+  },
+  description: "Book your favorite concerts and live events with Concerto. Secure, reliable, and user-friendly concert ticket booking platform.",
+  keywords: ["concert tickets", "live events", "music concerts", "ticket booking", "live music", "event tickets"],
+  authors: [{ name: "Concerto Team" }],
+  creator: "Concerto",
+  publisher: "Concerto",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://concerto.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://concerto.com',
+    title: 'Concerto - Premium Concert Booking Platform',
+    description: 'Book your favorite concerts and live events with Concerto. Secure, reliable, and user-friendly concert ticket booking platform.',
+    siteName: 'Concerto',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Concerto - Premium Concert Booking Platform',
+    description: 'Book your favorite concerts and live events with Concerto.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

@@ -266,7 +266,7 @@ export default function MyTicketsPage() {
                       <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
                         {getStatusText(booking.status)}
                       </span>
-                      {booking.status === 'PENDING' && (
+                                            {booking.status === 'PENDING' && (
                         <div className="flex gap-2">
                           <Link
                             href={`/payment/status?order_id=ORDER-${booking.id}`}
@@ -288,6 +288,14 @@ export default function MyTicketsPage() {
                             </span>
                           )}
                         </div>
+                      )}
+                      {booking.status === 'CONFIRMED' && (
+                        <Link
+                          href={`/payment/status?order_id=ORDER-${booking.id}`}
+                          className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                        >
+                          View Payment
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -368,16 +376,38 @@ export default function MyTicketsPage() {
                           Total Amount: Rp {booking.totalAmount?.toLocaleString() || '0'}
                         </p>
                       </div>
-                      {booking.status === 'CONFIRMED' && (
-                        <div className="text-right">
-                          <div className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
-                            Payment Confirmed
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Updated: {formatDate(booking.updatedAt)}
-                          </p>
-                        </div>
-                      )}
+                      <div className="text-right">
+                        {booking.status === 'CONFIRMED' && (
+                          <>
+                            <div className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
+                              Payment Confirmed
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Updated: {formatDate(booking.updatedAt)}
+                            </p>
+                          </>
+                        )}
+                        {booking.status === 'PENDING' && (
+                          <>
+                            <div className="inline-flex items-center px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full text-sm font-medium">
+                              Payment Pending
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Created: {formatDate(booking.createdAt)}
+                            </p>
+                          </>
+                        )}
+                        {booking.status === 'CANCELLED' && (
+                          <>
+                            <div className="inline-flex items-center px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-medium">
+                              Booking Cancelled
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Updated: {formatDate(booking.updatedAt)}
+                            </p>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
