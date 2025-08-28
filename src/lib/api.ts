@@ -1,6 +1,5 @@
 import { Backend_URL } from './constant';
 import { UpcomingEventsResponse, Event, TicketClassesResponse, TicketAvailabilityResponse, TicketsResponse } from './types';
-
 // Helper function for consistent error handling
 const handleApiError = async (response: Response) => {
   if (!response.ok) {
@@ -202,7 +201,6 @@ export const paymentApi = {
 
   // Create payment through backend (to avoid CORS issues)
   createPayment: async (paymentData: {
-    orderId: string;
     amount: number;
     customerName: string;
     customerEmail: string;
@@ -220,6 +218,40 @@ export const paymentApi = {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(paymentData),
+    });
+    
+    await handleApiError(response);
+    return await response.json();
+  },
+
+  // Create payment with booking data (booking created after payment confirmation)
+  createPaymentWithBooking: async (paymentData: {
+    amount: number;
+    customerName: string;
+    customerEmail: string;
+    itemDetails: Array<{
+      id: string;
+      price: number;
+      quantity: number;
+      name: string;
+    }>;
+  }, bookingData: {
+    userId: number;
+    tickets: Array<{
+      ticketClassId: number;
+      quantity: number;
+    }>;
+  }, token: string) => {
+    const response = await fetch(`${Backend_URL}/payment/create-with-booking`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        paymentData,
+        bookingData,
+      }),
     });
     
     await handleApiError(response);

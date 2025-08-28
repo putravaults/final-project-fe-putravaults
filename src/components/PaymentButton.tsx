@@ -46,7 +46,7 @@ export default function PaymentButton({
     setLoading(true);
 
     try {
-      // Step 1: Create booking directly with ticket class ID and quantity
+      // Step 1: Prepare booking data (will be created after payment confirmation)
       const bookingData = {
         userId: parseInt(session.user.id.toString()),
         tickets: [
@@ -56,10 +56,8 @@ export default function PaymentButton({
           }
         ]
       };
-      
-      const booking = await paymentApi.createBooking(bookingData, session.accessToken);
 
-      // Step 2: Prepare payment data for backend
+      // Step 2: Prepare payment data for backend (orderId will be generated on backend)
       const totalAmount = price * quantity;
       const itemName = `${eventName} - ${ticketClassName}`;
       
@@ -67,7 +65,6 @@ export default function PaymentButton({
       const truncatedItemName = itemName.length > 50 ? itemName.substring(0, 47) + '...' : itemName;
       
       const paymentData = {
-        orderId: `ORDER-${booking.id}`, // Use booking ID for order ID
         amount: totalAmount,
         customerName: session.user.name || 'Customer',
         customerEmail: session.user.email,
@@ -81,8 +78,8 @@ export default function PaymentButton({
         ],
       };
 
-      // Step 3: Create payment through backend (avoids CORS issues)
-      const paymentResponse = await paymentApi.createPayment(paymentData, session.accessToken)
+      // Step 3: Create payment with booking data (booking will be created after payment confirmation)
+      const paymentResponse = await paymentApi.createPaymentWithBooking(paymentData, bookingData, session.accessToken)
 
       if (paymentResponse && paymentResponse.token) {
         // Step 4: Check if Midtrans script is loaded
