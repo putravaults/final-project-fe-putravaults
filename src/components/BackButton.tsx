@@ -31,7 +31,7 @@ export default function BackButton({
   return (
     <button
       onClick={handleClick}
-      className={`inline-flex items-center gap-2 text-white/90 hover:text-white bg-black/30 hover:bg-black/50 px-3 py-2 rounded-md transition-colors backdrop-blur-sm ${className}`}
+      className={`inline-flex items-center gap-2 text-white/90 hover:text-white bg-black/30 hover:bg-green-900/90 px-3 py-2 rounded-md transition-colors backdrop-blur-sm ${className}`}
     >
       <IoArrowBackOutline className="w-4 h-4" />
       {children}

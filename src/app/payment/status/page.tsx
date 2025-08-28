@@ -52,7 +52,8 @@ interface BookingDetails {
 function PaymentStatusContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id');
+  const bookingIdFromQuery = searchParams.get('booking_id');
+  const paymentIdFromQuery = searchParams.get('payment_id');
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,15 +62,16 @@ function PaymentStatusContent() {
 
   useEffect(() => {
     const checkStatus = async () => {
-      if (!orderId) {
-        setError('No order ID provided');
+      if (!bookingIdFromQuery && !orderIdFromQuery) {
+        setError('No booking or order ID provided');
         setLoading(false);
         return;
       }
 
       try {
+        const paymentId = paymentIdFromQuery 
         // Check payment status via API route
-        const statusResponse = await fetch(`/api/payment/status?order_id=${orderId}`, {
+        const statusResponse = await fetch(`/api/payment/status?order_id=${paymentId}`, {
           headers: {
             'Authorization': `Bearer ${session?.accessToken}`,
           },
@@ -83,11 +85,10 @@ function PaymentStatusContent() {
         const status = await statusResponse.json();
         setPaymentStatus(status);
         
-        // Extract booking ID from order ID (ORDER-175 -> 175)
-        const bookingId = orderId.replace('ORDER-', '');
-        
+        // Determine booking ID
+        const bookingId = bookingIdFromQuery
         // Fetch booking details if we have session
-        if (session?.accessToken) {
+        if (session?.accessToken && bookingId) {
           try {
             const response = await fetch(`/api/bookings/${bookingId}`, {
               headers: {
@@ -111,7 +112,7 @@ function PaymentStatusContent() {
     };
 
     checkStatus();
-  }, [orderId, session]);
+  }, [bookingIdFromQuery, paymentIdFromQuery, session]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -184,12 +185,13 @@ function PaymentStatusContent() {
   };
 
   const refreshStatus = async () => {
-    if (!orderId) return;
+    if (!bookingIdFromQuery && !paymentIdFromQuery) return;
     
     setLoading(true);
     setError(null);
     
     try {
+      const orderId = paymentIdFromQuery 
       const statusResponse = await fetch(`/api/payment/status?order_id=${orderId}`, {
         headers: {
           'Authorization': `Bearer ${session?.accessToken}`,
@@ -211,14 +213,14 @@ function PaymentStatusContent() {
     }
   };
 
-  if (!orderId) {
+  if (!bookingIdFromQuery && !paymentIdFromQuery) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-4">
           <div className="text-center">
             <IoInformationCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Payment Status</h1>
-            <p className="text-gray-600 mb-6">No order ID provided.</p>
+            <p className="text-gray-600 mb-6">No booking or order ID provided.</p>
             <Link
               href="/my-tickets"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -247,7 +249,7 @@ function PaymentStatusContent() {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Payment Status</h1>
-                <p className="text-sm text-gray-600">Order ID: {orderId}</p>
+                <p className="text-sm text-gray-600">Order ID: {paymentIdFromQuery}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -299,7 +301,7 @@ function PaymentStatusContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Order ID</label>
+                      <label className="block text-sm font-medium text-gray-700">Payment ID</label>
                       <div className="flex items-center space-x-2 mt-1">
                         <p className="text-sm font-mono text-gray-900">{paymentStatus.order_id}</p>
                         <button
@@ -383,7 +385,7 @@ function PaymentStatusContent() {
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <h3 className="text-sm font-medium text-green-800 mb-2">Payment Successful!</h3>
                     <p className="text-sm text-green-700">
-                      Your payment has been confirmed. You will receive your tickets shortly.
+                      Your payment has been confirmed.
                     </p>
                   </div>
                 )}

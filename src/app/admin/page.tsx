@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
         const user = await userResponse.json();
 
         return (
-            <div className="min-h-screen pt-10 px-4 bg-gray-50">
+            <div className="min-h-screen pt-25 px-4 bg-gray-50">
                 <div className="max-w-7xl mx-auto">
                     {/* Admin Header */}
                     <div className="bg-white rounded-sm shadow-sm p-6 mb-6">

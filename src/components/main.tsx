@@ -180,20 +180,10 @@ export default function Main() {
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                     Upcoming Events
                 </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
+                <p className="text-gray-600 max-w-3xl mx-auto">
                     Discover amazing live music experiences. From rock legends to indie showcases, 
                     find your next unforgettable concert.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-4">
-                    <p className="text-sm text-green-800">
-                        {allEvents.length} event{allEvents.length !== 1 ? 's' : ''} available
-                    </p>
-                    {totalPages > 1 && (
-                        <p className="text-sm text-gray-500">
-                            • Page {currentPage} of {totalPages}
-                        </p>
-                    )}
-                </div>
             </div>
 
             {/* Events Grid - 4 columns layout */}

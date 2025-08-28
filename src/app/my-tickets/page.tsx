@@ -147,7 +147,8 @@ export default function MyTicketsPage() {
   const canCancelBooking = (booking: Booking) => {
     // Can't cancel if any event has passed
     const hasPastEvent = booking.tickets.some(ticket => isEventPast(ticket.event.date));
-    return !hasPastEvent && booking.status === 'PENDING';
+    const isCancellableStatus = booking.status !== 'CANCELLED'
+    return !hasPastEvent && isCancellableStatus;
   };
 
   const checkPaymentStatus = async (bookingId: number) => {
@@ -269,7 +270,7 @@ export default function MyTicketsPage() {
                                             {booking.status === 'PENDING' && (
                         <div className="flex gap-2">
                           <Link
-                            href={`/payment/status?order_id=ORDER-${booking.id}`}
+                            href={`/payment/status?booking_id=${booking.id}&payment_id=${booking.paymentId}`}
                             className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
                           >
                             Check Payment
@@ -290,12 +291,27 @@ export default function MyTicketsPage() {
                         </div>
                       )}
                       {booking.status === 'CONFIRMED' && (
-                        <Link
-                          href={`/payment/status?order_id=ORDER-${booking.id}`}
-                          className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
-                        >
-                          View Payment
-                        </Link>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/payment/status?booking_id=${booking.id}&payment_id=${booking.paymentId}`}
+                            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                          >
+                            View Payment
+                          </Link>
+                          {canCancelBooking(booking) ? (
+                            <button
+                              onClick={() => cancelBooking(booking.id)}
+                              disabled={cancellingBooking === booking.id}
+                              className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                              {cancellingBooking === booking.id ? 'Cancelling...' : 'Cancel'}
+                            </button>
+                          ) : (
+                            <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded text-sm">
+                              Cannot Cancel
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
