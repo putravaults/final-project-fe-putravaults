@@ -57,7 +57,7 @@ export default function EventCard({
                 
                 {/* Genre badge */}
                 <div className="absolute top-3 left-3">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-800/90 text-white text-xs font-medium rounded-sm backdrop-blur-sm">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/80 text-green-900 text-xs font-medium rounded-sm backdrop-blur-sm">
                         <IoMusicalNotesOutline className="w-3 h-3" />
                         {genre}
                     </span>
