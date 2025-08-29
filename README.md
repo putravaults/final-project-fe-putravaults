@@ -1,43 +1,95 @@
-# Concert Ticket Booking Frontend
+# 🎫 Concert Ticket Booking System
 
-A modern, responsive web application for booking concert tickets built with Next.js 15, React 19, and TypeScript.
-
-## 🎯 Overview
-
-This frontend application provides a seamless ticket booking experience for concert events. Users can browse events, purchase tickets, and manage their bookings, while administrators can create and manage events through a comprehensive dashboard.
+A modern, full-stack concert ticket booking application built with Next.js, featuring real-time ticket management, secure payment processing with Midtrans, and an intuitive admin dashboard.
 
 ## ✨ Features
 
-### For Users
-- 🔐 **Authentication** - Email/password via NextAuth Credentials provider
-- 🎫 **Event Browsing** - Browse and search available concerts
-- 💳 **Ticket Booking** - Purchase tickets with integrated payment processing
-- 📱 **Responsive Design** - Mobile-first approach with Tailwind CSS
-- 📋 **Booking Management** - View booking history and download tickets
+### 🎭 For Concert Goers
+- **Browse Events**: View upcoming concerts with detailed information
+- **Ticket Selection**: Choose from multiple ticket classes (VIP, General, etc.)
+- **Secure Payments**: Integrated Midtrans payment gateway
+- **Real-time Availability**: Live ticket availability updates
+- **Booking Management**: View and manage your bookings
 
-### For Administrators
-- 🎪 **Event Management** - Create, edit, and delete events
-- 🎟️ **Ticket Management** - Generate and manage ticket availability
-- 📊 **Dashboard** - Comprehensive admin dashboard with analytics
-- 💰 **Payment Processing** - Integrated Midtrans payment gateway
+### 👨‍💼 For Administrators
+- **Event Management**: Create, edit, and delete events
+- **Ticket Generation**: Generate tickets for different classes
+- **User Management**: Manage user accounts and roles
+- **Booking Overview**: Monitor all bookings and payments
+- **Dashboard Analytics**: Real-time insights and statistics
 
-## 🛠️ Tech Stack
+## 🖼️ Application Screenshots
 
-- **Framework**: Next.js 15.4.6 (App Router)
-- **UI Library**: React 19.1.0
-- **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4
-- **Authentication**: NextAuth.js 4.24.11
-- **Payment**: Midtrans Integration
-- **Package Manager**: pnpm
+### Homepage & Navigation
+<!-- Screenshot: Homepage with hero section and upcoming events -->
+![Homepage](screenshots/homepage.png)
 
-## 🚀 Quick Start
+### Event Details & Ticket Purchase
+<!-- Screenshot: Event detail page with ticket selection -->
+![Event Details](screenshots/event-details.png)
 
-### Prerequisites
-- Node.js 18+
-- pnpm (recommended) or npm
+<!-- Screenshot: Ticket purchase flow with quantity selection -->
+![Ticket Purchase](screenshots/ticket-purchase.png)
 
-### Installation
+### Payment Processing
+<!-- Screenshot: Midtrans payment popup -->
+![Payment](screenshots/payment-popup.png)
+
+<!-- Screenshot: Payment success page -->
+![Payment Success](screenshots/payment-success.png)
+
+### Admin Dashboard
+<!-- Screenshot: Admin dashboard overview -->
+![Admin Dashboard](screenshots/admin-dashboard.png)
+
+<!-- Screenshot: Event creation/editing modal -->
+![Event Management](screenshots/event-management.png)
+
+<!-- Screenshot: Ticket generation interface -->
+![Ticket Generation](screenshots/ticket-generation.png)
+
+### User Authentication
+<!-- Screenshot: Login page -->
+![Login](screenshots/login.png)
+
+<!-- Screenshot: Registration page -->
+![Registration](screenshots/registration.png)
+
+###  & Bookings
+<!-- Screenshot: Booking history -->
+![Booking History](screenshots/booking-history.png)
+
+## 🚀 Tech Stack
+
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **NextAuth.js** - Authentication solution
+- **React Hook Form** - Form handling and validation
+
+### Backend Integration
+- **NestJS** - Backend API framework
+- **PostgreSQL** - Database
+- **JWT** - Authentication tokens
+- **Class Validator** - DTO validation
+
+### Payment & Services
+- **Midtrans** - Payment gateway integration
+- **Snap API** - Payment popup interface
+- **Webhooks** - Payment status notifications
+
+## 📋 Prerequisites
+
+Before running this application, make sure you have:
+
+- **Node.js** (v18 or higher)
+- **npm** or **pnpm** package manager
+- **Backend API** running (NestJS server)
+- **PostgreSQL** database
+- **Midtrans** account and API keys
+
+## 🛠️ Installation
 
 1. **Clone the repository**
    ```bash
@@ -47,166 +99,160 @@ This frontend application provides a seamless ticket booking experience for conc
 
 2. **Install dependencies**
    ```bash
+   npm install
+   # or
    pnpm install
    ```
 
-3. **Set up environment variables**
-   Create a `.env.local` file:
+3. **Environment Setup**
+   Create a `.env.local` file in the root directory:
    ```env
-   # NextAuth
+   # Backend API
+   NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+   
+   # NextAuth Configuration
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-secret-key
-
-   # Frontend → Backend base URL
-   NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-
-   # Midtrans (client-side Snap)
+   
+   # Midtrans Configuration
    NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
+   MIDTRANS_SERVER_KEY=your-midtrans-server-key
+   MIDTRANS_MERCHANT_ID=your-midtrans-merchant-id
+   
+   # Database (if needed)
+   DATABASE_URL=your-database-url
    ```
 
 4. **Run the development server**
    ```bash
+   npm run dev
+   # or
    pnpm dev
    ```
 
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📁 Project Structure
+## 🔧 Configuration
 
-```
-src/
-├── app/                      # App Router
-│   ├── api/                 # Next.js API routes (frontend helpers)
-│   ├── admin/               # Admin dashboard
-│   ├── checkout/            # Checkout flow
-│   ├── contact/             # Contact page
-│   ├── event/               # Event detail
-│   ├── faq/                 # FAQ page
-│   ├── my-tickets/          # User bookings
-│   ├── payment/             # Payment status/result pages
-│   ├── signin/              # Sign in
-│   ├── signout/             # Sign out
-│   ├── signup/              # Sign up
-│   ├── terms/               # Terms & conditions
-│   └── page.tsx             # Landing page
-├── components/              # Reusable components
-│   ├── navbar/              # Navigation
-│   ├── AdminDashboard.tsx
-│   ├── AdminEventsList.tsx
-│   ├── CreateEventModal.tsx
-│   ├── EditEventModal.tsx
-│   ├── GenerateTicketsModal.tsx
-│   ├── MidtransScriptLoader.tsx
-│   ├── PaymentButton.tsx
-│   ├── TicketPurchaseCard.tsx
-│   └── ...
-├── lib/                     # Utilities
-│   ├── api.ts               # Backend API client wrappers
-│   ├── auth.ts              # NextAuth options
-│   ├── constant.ts          # Env constants (e.g., Backend URL)
-│   └── types.ts             # Shared types
-└── contexts/                # React contexts
-```
+### Backend API
+Ensure your NestJS backend is running on the configured URL (default: `http://localhost:8000`)
 
-## 🎨 Key Components
+### Midtrans Setup
+1. Create a Midtrans account
+2. Get your Client Key and Server Key
+3. Configure webhook URLs in Midtrans dashboard
+4. Update environment variables
 
-- **AuthProvider** - Authentication context provider
-- **Navbar** - Responsive navigation with user status
-- **EventCards** - Display event information
-- **PaymentButton** - Midtrans payment integration
-- **AdminDashboard** - Comprehensive admin interface
-- **CreateEventModal** - Event creation form
-- **TicketPurchaseCard** - Ticket selection interface
+### Authentication
+The application uses NextAuth.js with JWT strategy. Configure your backend authentication endpoints in the NextAuth configuration.
 
-## 🔗 API Integration
+## 📱 Key Pages & Routes
 
-The frontend connects to the NestJS backend (`NEXT_PUBLIC_BACKEND_URL`) with endpoints for:
-- **Authentication** - User registration and login
-- **Events** - CRUD operations for events
-- **Tickets** - Ticket management and reservation
-- **Bookings** - Booking creation and management
+### Public Pages
+- `/` - Homepage with upcoming events
+- `/event/[id]` - Event details and ticket purchase
+- `/about` - About page
+- `/contact` - Contact information
+- `/faq` - Frequently asked questions
+- `/terms` - Terms of service
 
-## 🔐 Authentication
+### Authentication
+- `/signin` - User login
+- `/signup` - User registration
+- `/signout` - User logout
 
-- **NextAuth.js (Credentials provider)** for session management
-- **JWT tokens** returned by backend stored in session
-- **Protected routes** for admin and user areas
+### Payment
+- `/payment/success` - Payment success page
+- `/payment/pending` - Payment pending page
+- `/payment/error` - Payment error page
 
-## 💳 Payment Integration
+### Protected Routes
+- `/admin` - Admin dashboard (Admin role required)
+- `/profile` - User profile (Authenticated users)
+- `/myreservation` - User bookings (Authenticated users)
 
-- **Midtrans** payment gateway (Snap.js sandbox)
-- **Multiple payment methods** (cards, bank transfer, e-wallets)
-- **Secure payment processing**
-- Frontend uses `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`; server-side Midtrans Server Key is configured in the backend
+## 🔐 Authentication & Authorization
 
-## 📱 Responsive Design
+### User Roles
+- **USER** - Can browse events, purchase tickets, view bookings
+- **ADMIN** - Full access to admin dashboard, event management, ticket generation
 
-- **Mobile-first** approach
-- **Tailwind CSS** for styling
-- **Flexible layouts** for all screen sizes
-- **Touch-friendly** interfaces
+### Protected Routes
+The application uses middleware to protect routes:
+- Admin routes require ADMIN role
+- User routes require authentication
+- Unauthorized access redirects to signin page
+
+## 💳 Payment Flow
+
+1. **User selects tickets** and quantity
+2. **Booking data prepared** with ticket class IDs
+3. **Payment initiated** through Midtrans Snap
+4. **Payment processed** via Midtrans gateway
+5. **Booking confirmed** after successful payment
+6. **Tickets assigned** to user account
+
+## 🎫 Ticket Management
+
+### Ticket Classes
+- **VIP Package** - Premium seating with additional benefits
+- **General Admission** - Standard seating
+- **Student Discount** - Special pricing for students
+- **Early Bird** - Limited time discounted tickets
+
+### Ticket Generation
+Admins can generate tickets for events:
+1. Create ticket classes with pricing
+2. Specify quantity for each class
+3. Generate individual tickets with seat numbers
+4. Monitor availability in real-time
 
 ## 🚀 Deployment
 
-### Build for Production
-```bash
-pnpm build
-pnpm start
-```
-
-### Deploy to Vercel (Recommended)
-1. Connect your GitHub repository
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
 2. Configure environment variables
 3. Deploy automatically on push
 
-## 🛠️ Available Scripts
-
-- `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm lint` - Run ESLint
-- `pnpm test` - Run unit tests
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm test:coverage` - Run tests with coverage report
-
-## 🧪 Testing
-
-The project includes comprehensive unit tests with Jest and React Testing Library:
-
-- **Unit Tests** - Core functions and utilities
-- **Component Tests** - React component rendering and interactions
-- **API Tests** - Backend integration and error handling
-- **Integration Tests** - End-to-end functionality
-
-Run tests with:
-```bash
-pnpm test              # Run all tests
-pnpm test:watch        # Run tests in watch mode
-pnpm test:coverage     # Run tests with coverage report
-```
-
-Current test coverage target: **20%**
+### Other Platforms
+The application can be deployed to any platform that supports Next.js:
+- Netlify
+- Railway
+- DigitalOcean App Platform
+- AWS Amplify
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Write tests for new functionality
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+## 🆘 Support
 
-For support and questions:
-- Check the [FAQ page](/faq)
-- Review the [API documentation](../concerto-backend/API_DOCUMENTATION.md)
-- Submit an issue on GitHub
+If you encounter any issues or have questions:
+
+1. Check the [FAQ](/faq) page
+2. Review the [API Documentation](API_DOCUMENTATION.md)
+3. Create an issue in the repository
+4. Contact support at support@concerto.com
+
+## 🔄 Changelog
+
+### Version 1.0.0
+- Initial release
+- Event management system
+- Ticket booking with Midtrans integration
+- Admin dashboard
+- User authentication and authorization
+- Real-time ticket availability
 
 ---
 
-**Built with ❤️ using Next.js, React, and TypeScript**
+**Built with ❤️ for the concert community**
