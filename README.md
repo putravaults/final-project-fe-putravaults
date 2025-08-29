@@ -9,7 +9,7 @@ This frontend application provides a seamless ticket booking experience for conc
 ## ✨ Features
 
 ### For Users
-- 🔐 **Authentication** - Secure login/signup with GitHub OAuth
+- 🔐 **Authentication** - Email/password via NextAuth Credentials provider
 - 🎫 **Event Browsing** - Browse and search available concerts
 - 💳 **Ticket Booking** - Purchase tickets with integrated payment processing
 - 📱 **Responsive Design** - Mobile-first approach with Tailwind CSS
@@ -53,11 +53,15 @@ This frontend application provides a seamless ticket booking experience for conc
 3. **Set up environment variables**
    Create a `.env.local` file:
    ```env
+   # NextAuth
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-secret-key
-   MIDTRANS_SERVER_KEY=your-midtrans-server-key
-   MIDTRANS_CLIENT_KEY=your-midtrans-client-key
-   API_BASE_URL=http://localhost:3001
+
+   # Frontend → Backend base URL
+   NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+
+   # Midtrans (client-side Snap)
+   NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=your-midtrans-client-key
    ```
 
 4. **Run the development server**
@@ -72,21 +76,37 @@ This frontend application provides a seamless ticket booking experience for conc
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── api/               # API routes
-│   ├── admin/             # Admin dashboard
-│   ├── event/             # Event pages
-│   ├── payment/           # Payment result pages
-│   └── auth/              # Authentication pages
-├── components/            # Reusable components
-│   ├── navbar/            # Navigation
-│   ├── modals/            # Modal components
-│   └── ui/                # UI components
-├── lib/                   # Utilities
-│   ├── api.ts             # API client
-│   ├── auth.ts            # Auth utilities
-│   └── types.ts           # TypeScript types
-└── contexts/              # React contexts
+├── app/                      # App Router
+│   ├── api/                 # Next.js API routes (frontend helpers)
+│   ├── admin/               # Admin dashboard
+│   ├── checkout/            # Checkout flow
+│   ├── contact/             # Contact page
+│   ├── event/               # Event detail
+│   ├── faq/                 # FAQ page
+│   ├── my-tickets/          # User bookings
+│   ├── payment/             # Payment status/result pages
+│   ├── signin/              # Sign in
+│   ├── signout/             # Sign out
+│   ├── signup/              # Sign up
+│   ├── terms/               # Terms & conditions
+│   └── page.tsx             # Landing page
+├── components/              # Reusable components
+│   ├── navbar/              # Navigation
+│   ├── AdminDashboard.tsx
+│   ├── AdminEventsList.tsx
+│   ├── CreateEventModal.tsx
+│   ├── EditEventModal.tsx
+│   ├── GenerateTicketsModal.tsx
+│   ├── MidtransScriptLoader.tsx
+│   ├── PaymentButton.tsx
+│   ├── TicketPurchaseCard.tsx
+│   └── ...
+├── lib/                     # Utilities
+│   ├── api.ts               # Backend API client wrappers
+│   ├── auth.ts              # NextAuth options
+│   ├── constant.ts          # Env constants (e.g., Backend URL)
+│   └── types.ts             # Shared types
+└── contexts/                # React contexts
 ```
 
 ## 🎨 Key Components
@@ -101,7 +121,7 @@ src/
 
 ## 🔗 API Integration
 
-The frontend connects to a NestJS backend API with endpoints for:
+The frontend connects to the NestJS backend (`NEXT_PUBLIC_BACKEND_URL`) with endpoints for:
 - **Authentication** - User registration and login
 - **Events** - CRUD operations for events
 - **Tickets** - Ticket management and reservation
@@ -109,16 +129,16 @@ The frontend connects to a NestJS backend API with endpoints for:
 
 ## 🔐 Authentication
 
-- **NextAuth.js** for session management
-- **JWT tokens** for stateless authentication
+- **NextAuth.js (Credentials provider)** for session management
+- **JWT tokens** returned by backend stored in session
 - **Protected routes** for admin and user areas
 
 ## 💳 Payment Integration
 
-- **Midtrans** payment gateway
+- **Midtrans** payment gateway (Snap.js sandbox)
 - **Multiple payment methods** (cards, bank transfer, e-wallets)
 - **Secure payment processing**
-- **Webhook handling** for payment status updates
+- Frontend uses `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`; server-side Midtrans Server Key is configured in the backend
 
 ## 📱 Responsive Design
 
